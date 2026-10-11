@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>feedback form</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<style>
+    #output {
+        background-color: black;
+        color: #a8c76a;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10;
+    }
+</style>
+
+<body class="min-h-screen bg-gray-800">
+    <div class="relative grid grid-cols-1 lg:grid-cols-2 min-h-screen">
+        <div class="absolute inset-0 lg:static">
+            <img class="w-full h-full object-cover" src="./left.jpg" alt="">
+        </div>
+        <div class="absolute inset-0 bg-black bg-opacity-50 lg:hidden"></div>
+        <div class="relative flex justify-center items-center p-4 min-h-screen">
+
+            <div class="w-full max-w-md bg-black grid gap-4 p-3 rounded text-center">
+                <div>
+                    <i style="color:#E6C587" class="fa-solid fa-hand-holding-heart text-3xl"></i>
+                    <h1 class="text-3xl font-bold tracking-wide leading-tight">
+                        <span class="block" style="color:#8e8f87">WE VALUE</span>
+                        <span class="block" style="color:#E6C587">YOUR FEEDBACK</span>
+                    </h1>
+                </div>
+                <div class="text-center text-gray-400">
+                    <i class="star fa-regular fa-star"></i>
+                    <i class="star fa-regular fa-star"></i>
+                    <i class="star fa-regular fa-star"></i>
+                    <i class="star fa-regular fa-star"></i>
+                    <i class="star fa-regular fa-star"></i>
+                </div>
+                <div class="text-white">
+                    <p class="text-center" id="response"></p>
+                    <p class="text-center">Review of Course</p>
+
+                    <textarea id="review" class="w-full bg-gray-600 text-white p-2 rounded" wrap="soft"
+                        oninput="pressed()" name="review" rows="4" maxlength="150"></textarea>
+                    <p id="counter">Maximum 150 characters</p>
+                    <button id="post" type="button" class="w-full text-white bg-gray-600 rounded mt-3">Post</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="reviewModal" style="display:none"
+            class="fixed inset-0 z-50 justify-center items-center bg-black bg-opacity-60 p-6">
+
+            <div class="w-full max-w-md bg-white text-black p-5 rounded-2xl text-center">
+                <h2 class="text-xl font-bold mb-2">Thanks for your review</h2>
+                <p id="modalStars" class="text-2xl mb-2"></p>
+                <p id="modalText" class="mb-4 break-words"></p>
+                <button id="closeModal" class="bg-gray-800 text-white px-4 py-2 rounded">Close</button>
+            </div>
+        </div>
+        <script>
+            var rating = 0
+            var MAX = 150
+            var stars = document.querySelectorAll(".star")
+            stars.forEach(function (star, index) {
+                star.addEventListener("click", function () {
+                    rating = index + 1
+                    stars.forEach(function (other, i) {
+                        var filled = i <= index
+                        other.classList.toggle("fa-solid", filled)
+                        other.classList.toggle("fa-regular", !filled)
+                        other.classList.toggle("text-yellow-300", filled)
+                    })
+                    var response = document.getElementById("response")
+                    if (rating === 1) {
+                        response.textContent = "It is very bad 😢"
+                    } else if (rating === 2) {
+                        response.textContent = "Poor 😞"
+                    } else if (rating === 3) {
+                        response.textContent = "Okay 😐"
+                    } else if (rating === 4) {
+                        response.textContent = "Good 😊"
+                    } else if (rating === 5) {
+                        response.textContent = "Excellent 🤩"
+                    }
+                })
+            })
+            var review = document.getElementById("review")
+            function pressed(event) {
+                document.getElementById("counter").textContent = (150 - review.value.length) + "/150 characters remaining"
+                if (review.value.length == 150) {
+                    alert("Maximum characters reached")
+                }
+            }
+            var post = document.getElementById("post")
+            var modal = document.getElementById("reviewModal")
+
+            post.addEventListener("click", function () {
+                if (rating === 0) {
+                    alert("Please choose a star rating")
+                    return
+                }
+                if (review.value.trim() === "") {
+                    alert("Please write your review")
+                    return
+                }
+                if (review.value.length > MAX) {
+                    alert("Your review is too long")
+                    return
+                }
+                document.getElementById("modalStars").textContent = "⭐".repeat(rating)
+                document.getElementById("modalText").textContent = review.value
+                modal.style.display = "flex"
+            })
+            function closeModal() {
+                modal.style.display = "none"
+            }
+            document.getElementById("closeModal").addEventListener("click", closeModal)
+
+            modal.addEventListener("click", function (event) {
+                if (event.target === modal) closeModal()
+            })
+            document.addEventListener("keydown", function (event) {
+                if (event.key === "Escape") closeModal()
+            })
+            function closeModal() {
+                modal.style.display = "none"
+                rating = 0
+                stars.forEach(function (s) {
+                    s.classList.remove("fa-solid", "text-yellow-300")
+                    s.classList.add("fa-regular")
+                })
+                document.getElementById("response").textContent = ""
+                review.value = ""
+                pressed()
+            }
+        </script>
+</body>
+
+</html>

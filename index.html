@@ -27,7 +27,6 @@
         </div>
         <div class="absolute inset-0 bg-black bg-opacity-50 lg:hidden"></div>
         <div class="relative flex justify-center items-center p-4 min-h-screen">
-
             <div class="w-full max-w-md bg-black grid gap-4 p-3 rounded text-center">
                 <div>
                     <i style="color:#E6C587" class="fa-solid fa-hand-holding-heart text-3xl"></i>
@@ -48,13 +47,14 @@
                     <p class="text-center">Review of Course</p>
 
                     <textarea id="review" class="w-full bg-gray-600 text-white p-2 rounded" wrap="soft"
-                        oninput="pressed()" name="review" rows="4" maxlength="150"></textarea>
-                    <p id="counter">Maximum 150 characters</p>
+                        name="review" rows="4" maxlength="200"></textarea>
+                    <p id="counter">0/200 characters (200 remaining)</p>
+                    <p id="warning" class="text-red-400 hidden">Maximum limit reached. You can't type more.</p>
                     <button id="post" type="button" class="w-full text-white bg-gray-600 rounded mt-3">Post</button>
                 </div>
             </div>
         </div>
-
+    </div>
         <div id="reviewModal" style="display:none"
             class="fixed inset-0 z-50 justify-center items-center bg-black bg-opacity-60 p-6">
 
@@ -65,83 +65,89 @@
                 <button id="closeModal" class="bg-gray-800 text-white px-4 py-2 rounded">Close</button>
             </div>
         </div>
-        <script>
-            var rating = 0
-            var MAX = 150
-            var stars = document.querySelectorAll(".star")
-            stars.forEach(function (star, index) {
-                star.addEventListener("click", function () {
-                    rating = index + 1
-                    stars.forEach(function (other, i) {
-                        var filled = i <= index
-                        other.classList.toggle("fa-solid", filled)
-                        other.classList.toggle("fa-regular", !filled)
-                        other.classList.toggle("text-yellow-300", filled)
-                    })
-                    var response = document.getElementById("response")
-                    if (rating === 1) {
-                        response.textContent = "It is very bad 😢"
-                    } else if (rating === 2) {
-                        response.textContent = "Poor 😞"
-                    } else if (rating === 3) {
-                        response.textContent = "Okay 😐"
-                    } else if (rating === 4) {
-                        response.textContent = "Good 😊"
-                    } else if (rating === 5) {
-                        response.textContent = "Excellent 🤩"
-                    }
+    <script>
+        var rating = 0
+        var MAX = 200
+ 
+        var stars = document.querySelectorAll(".star")
+        var response = document.getElementById("response")
+        var review = document.getElementById("review")
+        var counter = document.getElementById("counter")
+        var warning = document.getElementById("warning")
+        var post = document.getElementById("post")
+        var modal = document.getElementById("reviewModal")
+        stars.forEach(function (star, index) {
+            star.addEventListener("click", function () {
+                rating = index + 1
+                stars.forEach(function (other, i) {
+                    var filled = i <= index
+                    other.classList.toggle("fa-solid", filled)
+                    other.classList.toggle("fa-regular", !filled)
+                    other.classList.toggle("text-yellow-300", filled)
                 })
-            })
-            var review = document.getElementById("review")
-            function pressed(event) {
-                document.getElementById("counter").textContent = (150 - review.value.length) + "/150 characters remaining"
-                if (review.value.length == 150) {
-                    alert("Maximum characters reached")
+                if (rating === 1) {
+                    response.textContent = "It is very bad 😢"
+                } else if (rating === 2) {
+                    response.textContent = "Poor 😞"
+                } else if (rating === 3) {
+                    response.textContent = "Okay 😐"
+                } else if (rating === 4) {
+                    response.textContent = "Good 😊"
+                } else if (rating === 5) {
+                    response.textContent = "Excellent 🤩"
                 }
+            })
+        })
+        function updateCounter() {
+            var typed = review.value.length
+            var remaining = MAX - typed
+ 
+            counter.textContent = typed + "/" + MAX + " characters (" + remaining + " remaining)"
+ 
+            var atLimit = typed >= MAX
+            warning.classList.toggle("hidden", !atLimit)
+            counter.classList.toggle("text-red-400", atLimit)
+        }
+ 
+        review.addEventListener("input", updateCounter)
+        updateCounter()
+ 
+        post.addEventListener("click", function () {
+            if (rating === 0) {
+                alert("Please choose a star rating")
+                return
             }
-            var post = document.getElementById("post")
-            var modal = document.getElementById("reviewModal")
-
-            post.addEventListener("click", function () {
-                if (rating === 0) {
-                    alert("Please choose a star rating")
-                    return
-                }
-                if (review.value.trim() === "") {
-                    alert("Please write your review")
-                    return
-                }
-                if (review.value.length > MAX) {
-                    alert("Your review is too long")
-                    return
-                }
-                document.getElementById("modalStars").textContent = "⭐".repeat(rating)
-                document.getElementById("modalText").textContent = review.value
-                modal.style.display = "flex"
-            })
-            function closeModal() {
-                modal.style.display = "none"
+            if (review.value.trim() === "") {
+                alert("Please write your review")
+                return
             }
-            document.getElementById("closeModal").addEventListener("click", closeModal)
-
-            modal.addEventListener("click", function (event) {
-                if (event.target === modal) closeModal()
+            document.getElementById("modalStars").textContent = "⭐".repeat(rating)
+            document.getElementById("modalText").textContent = review.value
+            modal.style.display = "flex"
+        })
+        function closeModal() {
+            if (modal.style.display === "none") return  
+            modal.style.display = "none"
+            rating = 0
+            stars.forEach(function (s) {
+                s.classList.remove("fa-solid", "text-yellow-300")
+                s.classList.add("fa-regular")
             })
-            document.addEventListener("keydown", function (event) {
-                if (event.key === "Escape") closeModal()
-            })
-            function closeModal() {
-                modal.style.display = "none"
-                rating = 0
-                stars.forEach(function (s) {
-                    s.classList.remove("fa-solid", "text-yellow-300")
-                    s.classList.add("fa-regular")
-                })
-                document.getElementById("response").textContent = ""
-                review.value = ""
-                pressed()
-            }
-        </script>
+            response.textContent = ""
+            review.value = ""
+            updateCounter()
+        }
+ 
+        document.getElementById("closeModal").addEventListener("click", closeModal)
+ 
+        modal.addEventListener("click", function (event) {
+            if (event.target === modal) closeModal()
+        })
+ 
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "Escape") closeModal()
+        })
+    </script>
 </body>
 
 </html>
